@@ -115,6 +115,7 @@ void compose_imgui_frame(GLFWwindow* window, int key, int scancode, int action, 
 
 void key_callback();
 void scroll_callback(GLFWwindow* window, double x, double y);
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -157,9 +158,16 @@ GLFWwindow* createWindow(int width, int height, const char* title)
 
 void scroll_callback(GLFWwindow* window, double x, double y)
 {
-  float Fovy = cameras[cam_select_idx].fovy();
-  Fovy += y;
-  cameras[cam_select_idx].set_fovy(Fovy);
+  float fov = cameras[cam_select_idx].fovy();
+  fov -= (float)y;
+  
+  if (fov < 1.0f)
+    fov = 1.0f;
+  if (fov > 45.0f)
+    fov = 45.0f;
+  
+  cameras[cam_select_idx].set_fovy(fov);
+
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -200,6 +208,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     cameras[cam_select_idx].move_backward(0.1f);
 }
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+  glViewport(0, 0, width, height);
+  g_aspect = (float) width / (float) height;
+}
+
 void init_window(GLFWwindow* window) 
 {
   init_imgui(window);
@@ -211,6 +225,7 @@ void init_window(GLFWwindow* window)
 
   glfwSetKeyCallback(window, key_callback);
   glfwSetScrollCallback(window, scroll_callback);
+  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 }
 
 bool init_scene_from_file(const std::string& filename)
