@@ -2,7 +2,7 @@
 models/duck.obj
 0.5
 0.2 -0.2 -0.4
-models/textured_output.obj
+models/textured_output2.obj
 0.5
 0.0 0.0 0.0
 2
