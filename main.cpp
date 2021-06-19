@@ -126,6 +126,13 @@ void processInput(GLFWwindow *window);
 glm::quat qRot = quat(1.f, 0.f, 0.f, 0.f); 
 ////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////
+/// Scene Export 관련 변수 및 함수
+////////////////////////////////////////////////////////////////////////////////
+void exportCurrentScene(const std::string& filename);
+char strbuf[BUFSIZ] = { '\0', };
+////////////////////////////////////////////////////////////////////////////////
+
 GLFWwindow* createWindow(int width, int height, const char* title)
 {
   GLFWwindow* window; // create window
@@ -388,6 +395,18 @@ void compose_imgui_frame()
     ImGui::End();
   }
 
+  // control window
+  {
+    ImGui::Begin("file export");
+
+    ImGui::Text("Export Wizard: Write Export File Name!");
+    ImGui::InputText("string", strbuf, IM_ARRAYSIZE(strbuf));
+    if (ImGui::Button("Save"))
+        exportCurrentScene(std::string(strbuf));
+
+    ImGui::End();
+  }
+
 }
 
 // GLSL 파일을 읽어서 컴파일한 후 쉐이더 객체를 생성하는 함수
@@ -557,6 +576,39 @@ void render(GLFWwindow* window)
 
   // Poll for and process events
   glfwPollEvents();
+}
+
+void exportCurrentScene(const std::string& filename) {
+  std::ofstream fout(filename);
+  
+  fout << models.size() << std::endl;
+  for (int i = 0; i < models.size(); i++)
+  {
+    std::string name = model_names[i];
+    float scale = models[i].scale()[0];
+    float x = models[i].translate()[0];
+    float y = models[i].translate()[1];
+    float z = models[i].translate()[2];
+    fout << name << std::endl;
+    fout << models[i].scale()[0] << std::endl;
+    fout << (float) x << ' ' << (float) y << ' ' << (float) z << std::endl;
+  }
+  
+  fout << cameras.size() << std::endl;
+  for (int i = 0; i < cameras.size(); i++)
+  {
+    fout << (float) cameras[i].position().x << ' ';
+    fout << (float) cameras[i].position().y << ' ';
+    fout << (float) cameras[i].position().z << std::endl;
+    fout << (float) cameras[i].front_direction().x << ' ';
+    fout << (float) cameras[i].front_direction().y << ' ';
+    fout << (float) cameras[i].front_direction().z << std::endl;
+    fout << (float) cameras[i].up_direction().x << ' ';
+    fout << (float) cameras[i].up_direction().y << ' ';
+    fout << (float) cameras[i].up_direction().z << std::endl;
+  }
+  
+  fout.close();
 }
 
 

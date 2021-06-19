@@ -37,7 +37,7 @@ void main()
 	float rdotv = pow(max(dot(view_dir, reflect_dir), 0.0), u_obj_shininess);
 	vec3 specular = rdotv * u_light_color;
 
-	vec3 color = (ambient + diffuse + specular) * texture2D(u_diffuse_texture, v_texcoord).xyz;
+	vec3 color = (ambient + (1/pow(length(u_light_position - position_wc), 4)) * (diffuse + specular)) * texture2D(u_diffuse_texture, v_texcoord).xyz;
 
 	gl_FragColor = vec4(color, 1.0f);
 
