@@ -116,6 +116,7 @@ void compose_imgui_frame(GLFWwindow* window, int key, int scancode, int action, 
 void key_callback();
 void scroll_callback(GLFWwindow* window, double x, double y);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow *window);
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -196,22 +197,26 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
   
   models[obj_select_idx].set_translate(translate);
   models[obj_select_idx].set_scale(scale);
-
-  // camera extrinsic parameter
-  if (key == GLFW_KEY_A && action == GLFW_PRESS)
-    cameras[cam_select_idx].move_left(0.1f);
-  if (key == GLFW_KEY_D && action ==GLFW_PRESS)
-    cameras[cam_select_idx].move_right(0.1f);
-  if (key == GLFW_KEY_W && action == GLFW_PRESS)
-    cameras[cam_select_idx].move_forward(0.1f);
-  if (key == GLFW_KEY_S && action == GLFW_PRESS)
-    cameras[cam_select_idx].move_backward(0.1f);
+    
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
   glViewport(0, 0, width, height);
   g_aspect = (float) width / (float) height;
+}
+
+void processInput(GLFWwindow *window)
+{
+  // camera extrinsic parameter
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    cameras[cam_select_idx].move_forward(0.1f);
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    cameras[cam_select_idx].move_backward(0.1f);
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    cameras[cam_select_idx].move_left(0.1f);
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    cameras[cam_select_idx].move_right(0.1f);
 }
 
 void init_window(GLFWwindow* window) 
@@ -273,6 +278,8 @@ bool init_scene_from_file(const std::string& filename)
       glm::vec3(front_x, front_y, front_z),
       glm::vec3(up_x, up_y, up_z),
       45.0f,
+      0.0f,
+      0.0f,
       0.0f,
       0.0f
     );
@@ -494,6 +501,9 @@ void init_shader_program()
 
 void render_object()
 {
+  // Per-Frame time logic
+  cameras[cam_select_idx].update_delta_time(glfwGetTime());
+  
   // set transform
   mat_view = cameras[cam_select_idx].get_view_matrix();
 
@@ -566,6 +576,7 @@ int main(int argc, char* argv[])
   // Loop until the user closes the window
   while (!glfwWindowShouldClose(window))
   {
+    processInput(window);
     render(window);
   }
 

@@ -14,12 +14,14 @@ public:
       up_dir_(0.0f, 1.0f, 0.0f), 
       right_dir_(1.0f, 0.0f, 0.0f),
       fovy_(45.0f),
+      delta_time_(0.0f),
+      last_frame_(0.0f),
       yaw_(0.0f),
       pitch_(0.0f),
       mode_(kOrtho) { }
 
-  Camera(const glm::vec3& _position, const glm::vec3& _front_dir, const glm::vec3& _up_dir, float _fovy, float _yaw, float _pitch)
-    : position_(_position), front_dir_(_front_dir), up_dir_(_up_dir), fovy_(_fovy), yaw_(_yaw), pitch_(_pitch)
+  Camera(const glm::vec3& _position, const glm::vec3& _front_dir, const glm::vec3& _up_dir, float _fovy, float _delta_time, float _last_frame, float _yaw, float _pitch)
+    : position_(_position), front_dir_(_front_dir), up_dir_(_up_dir), fovy_(_fovy), delta_time_(_delta_time), last_frame_(_last_frame), yaw_(_yaw), pitch_(_pitch)
   {
     right_dir_ = glm::cross(front_dir_, up_dir_);
   }
@@ -40,8 +42,8 @@ public:
 	const glm::vec3  center_position() const;
   const glm::mat4  get_view_matrix();
 
-	const float				fovy() const							{ return fovy_; }
-	void							set_fovy(float _fovy)			{ fovy_ = _fovy; }
+	const float				fovy() const					  { return fovy_; }
+	void							set_fovy(float _fovy)	  { fovy_ = _fovy; }
 
   Camera::Mode      mode() const { return mode_; }
   void              set_mode(Camera::Mode _mode) { mode_ = _mode; }
@@ -50,6 +52,7 @@ public:
   const float       pitch() const { return pitch_; }
 
   void              update_front_direction(glm::vec3 dir);
+  void              update_delta_time(float time);
 
 private:
 	glm::vec3  position_;    // position of the camera  
@@ -57,6 +60,8 @@ private:
   glm::vec3  up_dir_;      // up direction of the camera       (it should be a unit vector whose length is 1)
   glm::vec3  right_dir_;   // right direction of the camera    (it should be a unit vector whose length is 1)
 
+  float delta_time_;
+  float last_frame_;
 	float fovy_;
 
   Mode  mode_;

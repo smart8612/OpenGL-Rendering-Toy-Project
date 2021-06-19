@@ -15,7 +15,7 @@ const glm::mat4  Camera::get_view_matrix()
 // TODO: fill up the following functions properly 
 void Camera::move_forward(float delta)
 {
-  position_ += delta * front_dir_;
+  position_ += delta * delta_time_ *  front_dir_;
 }
 
 void Camera::move_backward(float delta)
@@ -25,7 +25,7 @@ void Camera::move_backward(float delta)
 
 void Camera::move_left(float delta)
 {
-  position_ -= delta * right_dir_;
+  position_ -= delta * delta_time_ * right_dir_;
 }
 
 void Camera::move_right(float delta)
@@ -35,7 +35,7 @@ void Camera::move_right(float delta)
 
 void Camera::move_up(float delta)
 {
-  position_ += delta * up_dir_;
+  position_ += delta * delta_time_ * up_dir_;
 }
 
 void Camera::move_down(float delta)
@@ -80,4 +80,10 @@ void Camera::update_front_direction(glm::vec3 dir)
 
   right_dir_ = glm::normalize(glm::cross(front_dir_, glm::vec3(0.0, 1.0f, 0.0f)));
   up_dir_    = glm::normalize(glm::cross(right_dir_, front_dir_));
+}
+
+void Camera::update_delta_time(float time)
+{
+  delta_time_ = time - last_frame_;
+  last_frame_ = time;
 }
