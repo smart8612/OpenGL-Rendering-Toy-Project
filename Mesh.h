@@ -13,6 +13,7 @@
 #include <GL/glew.h>
 #include <iostream>
 
+#include "Material.h"
 
 struct Face
 {    
@@ -30,6 +31,10 @@ public:
     void init_buffer_objects();
     void draw(int loc_a_position, int loc_a_texcoord, int loc_a_normal); 
     void print_info();
+
+    void set_material(Material mat) { mMaterial = mat;}
+    
+    Material mMaterial;
     
 private:
 

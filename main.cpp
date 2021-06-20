@@ -29,6 +29,7 @@
 #include "Camera.h"
 #include "Model.h"
 #include "Mesh.h"
+#include "Light.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// initialization 관련 변수 및 함수
@@ -41,8 +42,6 @@ bool init_scene_from_file(const std::string& filename);
 // ////////////////////////////////////////////////////////////////////////////////
 // /// shading 관련 변수
 // //////////////////////////////////////////////////////////////////////////////// 
-glm::vec3 g_light_position(0.0f, 1.0f, 0.0f);
-glm::vec3 g_light_color(1.0f, 1.0f, 1.0f);
 
 float     g_obj_shininess = 5.0f;
 
@@ -66,7 +65,11 @@ GLint   loc_u_normal_matrix;
 
 GLint   loc_u_camera_position;
 GLint   loc_u_light_position;
-GLint   loc_u_light_color;
+
+GLint   loc_u_light_ambient;
+GLint   loc_u_light_diffuse;
+GLint   loc_u_light_specular;
+
 GLint   loc_u_obj_shininess;
 
 GLint   loc_u_diffuse_texture;
@@ -97,6 +100,7 @@ bool  g_is_perspective = true;
 ////////////////////////////////////////////////////////////////////////////////
 std::vector<Model> models;
 std::vector<std::string> model_names;
+Light light;
 
 bool load_asset(const std::string& filename);
 // void init_buffer_objects();     // VBO init 함수: GPU의 VBO를 초기화하는 함수.
@@ -381,15 +385,18 @@ void compose_imgui_frame()
   }
 
    {
-    ImGui::Begin("phong shading");
+    ImGui::Begin("light");
 
-    ImGui::ColorEdit3("background color", &g_clear_color[0]);
+    ImGui::ColorEdit3("background color", glm::value_ptr(g_clear_color));
 
-    glm::vec3 light(-g_light_position); 
-    ImGui::gizmo3D("Light direction", light);
-    g_light_position = -light;
+    glm::vec3 vec(-light.pos); 
+    ImGui::gizmo3D("Light direction", vec);
+    light.pos = -vec;
 
-    ImGui::ColorEdit3("Light color", &g_light_color[0]);
+    ImGui::ColorEdit3("ambient light", glm::value_ptr(light.ambient));
+    ImGui::ColorEdit3("diffuse light", glm::value_ptr(light.diffuse));
+    ImGui::ColorEdit3("specular light", glm::value_ptr(light.specular));
+    
     ImGui::SliderFloat("shininess", &g_obj_shininess, 0.0f, 500.0f);
 
     ImGui::End();
@@ -506,7 +513,11 @@ void init_shader_program()
 
   loc_u_camera_position = glGetUniformLocation(program, "u_camera_position");
   loc_u_light_position = glGetUniformLocation(program, "u_light_position");
-  loc_u_light_color = glGetUniformLocation(program, "u_light_color");
+  
+  loc_u_light_ambient = glGetUniformLocation(program, "u_light_ambient");
+  loc_u_light_diffuse = glGetUniformLocation(program, "u_light_diffuse");
+  loc_u_light_specular = glGetUniformLocation(program, "u_light_specular");
+
   loc_u_obj_shininess = glGetUniformLocation(program, "u_obj_shininess");
 
   loc_u_diffuse_texture = glGetUniformLocation(program, "u_diffuse_texture");
@@ -536,8 +547,11 @@ void render_object()
   glUseProgram(program);
 
   glUniform3fv(loc_u_camera_position, 1, glm::value_ptr(cameras[cam_select_idx].position()));
-  glUniform3fv(loc_u_light_position, 1, glm::value_ptr(g_light_position));
-  glUniform3fv(loc_u_light_color, 1, glm::value_ptr(g_light_color));
+  glUniform3fv(loc_u_light_position, 1, glm::value_ptr(light.pos));
+  glUniform3fv(loc_u_light_ambient, 1, glm::value_ptr(light.ambient));
+  glUniform3fv(loc_u_light_diffuse, 1, glm::value_ptr(light.diffuse));
+  glUniform3fv(loc_u_light_specular, 1, glm::value_ptr(light.specular));
+
   glUniform1f(loc_u_obj_shininess, g_obj_shininess);
 
   glUniformMatrix4fv(loc_u_view_matrix, 1, GL_FALSE, glm::value_ptr(mat_view));
@@ -615,7 +629,7 @@ void exportCurrentScene(const std::string& filename) {
 int main(int argc, char* argv[])
 {
   // create window
-  GLFWwindow* window = createWindow(1000, 1000, "Hello Assimp");
+  GLFWwindow* window = createWindow(1000, 1000, "JeongTaek's Room - OpenGL");
 
   // initialize window
   init_window(window);
