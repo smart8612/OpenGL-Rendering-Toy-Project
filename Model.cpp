@@ -45,14 +45,21 @@ bool Model::init_texture_object(std::string filepath)
     return true;
 }
 
-void Model::draw(int loc_a_position,  int loc_u_diffuse_texture, int loc_a_texcoord, int  loc_a_normal)
+void Model::draw(int loc_a_position,  int loc_u_diffuse_texture, int loc_a_texcoord, int  loc_a_normal, int loc_u_ambient, int loc_u_diffuse, int loc_u_specular, int loc_u_shininess)
 {
     glUniform1i(loc_u_diffuse_texture, 0);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texid);   
+    glBindTexture(GL_TEXTURE_2D, texid);
 
     for (int i = 0; i < mMeshes.size(); ++i)
     {
+        Material mat = mMeshes[i].mMaterial;
+        
+        glUniform3fv(loc_u_ambient, 1, glm::value_ptr(mat.ambient));
+        glUniform3fv(loc_u_diffuse, 1, glm::value_ptr(mat.diffuse));
+        glUniform3fv(loc_u_specular, 1, glm::value_ptr(mat.specular));
+        glUniform1f(loc_u_shininess, mat.shininess);
+        
         mMeshes[i].draw(loc_a_position, loc_a_texcoord, loc_a_normal);
     }
 }

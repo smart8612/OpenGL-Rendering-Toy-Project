@@ -42,9 +42,6 @@ bool init_scene_from_file(const std::string& filename);
 // ////////////////////////////////////////////////////////////////////////////////
 // /// shading 관련 변수
 // //////////////////////////////////////////////////////////////////////////////// 
-
-float     g_obj_shininess = 5.0f;
-
 glm::vec3 g_clear_color(0.5f, 0.5f, 0.5f);
 
 glm::mat3 mat_normal;
@@ -70,6 +67,9 @@ GLint   loc_u_light_ambient;
 GLint   loc_u_light_diffuse;
 GLint   loc_u_light_specular;
 
+GLint   loc_u_obj_ambient;
+GLint   loc_u_obj_diffuse;
+GLint   loc_u_obj_specular;
 GLint   loc_u_obj_shininess;
 
 GLint   loc_u_diffuse_texture;
@@ -396,8 +396,28 @@ void compose_imgui_frame()
     ImGui::ColorEdit3("ambient light", glm::value_ptr(light.ambient));
     ImGui::ColorEdit3("diffuse light", glm::value_ptr(light.diffuse));
     ImGui::ColorEdit3("specular light", glm::value_ptr(light.specular));
+
+    ImGui::End();
+  }
+
+  {
+    ImGui::Begin("materials");
+
+    std::vector<Mesh>& mMeshes = models[obj_select_idx].meshes();
     
-    ImGui::SliderFloat("shininess", &g_obj_shininess, 0.0f, 500.0f);
+    std::string label;
+    for (int i = 0; i < mMeshes.size(); ++i)
+    {
+      label = mMeshes[i].mMaterial.name + "-ambient";
+      ImGui::ColorEdit3(label.c_str(), glm::value_ptr(mMeshes[i].mMaterial.ambient));
+      label = mMeshes[i].mMaterial.name + "-diffuse";
+      ImGui::ColorEdit3(label.c_str(), glm::value_ptr(mMeshes[i].mMaterial.diffuse));
+      label = mMeshes[i].mMaterial.name + "-specular";
+      ImGui::ColorEdit3(label.c_str(), glm::value_ptr(mMeshes[i].mMaterial.specular));
+      label = mMeshes[i].mMaterial.name + "-shininess";
+      ImGui::SliderFloat(label.c_str(), &mMeshes[i].mMaterial.shininess, 0.0f, 500.0f);
+      ImGui::NewLine();
+    }
 
     ImGui::End();
   }
@@ -518,6 +538,9 @@ void init_shader_program()
   loc_u_light_diffuse = glGetUniformLocation(program, "u_light_diffuse");
   loc_u_light_specular = glGetUniformLocation(program, "u_light_specular");
 
+  loc_u_obj_ambient = glGetUniformLocation(program, "u_obj_ambient");
+  loc_u_obj_diffuse = glGetUniformLocation(program, "u_obj_diffuse");
+  loc_u_obj_specular = glGetUniformLocation(program, "u_obj_specular");
   loc_u_obj_shininess = glGetUniformLocation(program, "u_obj_shininess");
 
   loc_u_diffuse_texture = glGetUniformLocation(program, "u_diffuse_texture");
@@ -552,8 +575,6 @@ void render_object()
   glUniform3fv(loc_u_light_diffuse, 1, glm::value_ptr(light.diffuse));
   glUniform3fv(loc_u_light_specular, 1, glm::value_ptr(light.specular));
 
-  glUniform1f(loc_u_obj_shininess, g_obj_shininess);
-
   glUniformMatrix4fv(loc_u_view_matrix, 1, GL_FALSE, glm::value_ptr(mat_view));
 
   for (int i = 0; i < models.size(); ++i)
@@ -565,7 +586,7 @@ void render_object()
     glUniformMatrix4fv(loc_u_model_matrix, 1, GL_FALSE, glm::value_ptr(mat_model));
     glUniformMatrix3fv(loc_u_normal_matrix, 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(mat_model)))));
     
-    models[i].draw(loc_a_position, loc_u_diffuse_texture, loc_a_texcoord, loc_a_normal);
+    models[i].draw(loc_a_position, loc_u_diffuse_texture, loc_a_texcoord, loc_a_normal, loc_u_obj_ambient, loc_u_obj_diffuse, loc_u_obj_specular, loc_u_obj_shininess);
   }
 
   // 쉐이더 프로그램 사용해제

@@ -11,7 +11,10 @@ uniform vec3 u_light_ambient;
 uniform vec3 u_light_diffuse;
 uniform vec3 u_light_specular;
 
-uniform float u_obj_shininess; 
+uniform vec3  u_obj_ambient;
+uniform vec3  u_obj_diffuse;
+uniform vec3  u_obj_specular;
+uniform float u_obj_shininess;
 
 uniform vec3 u_camera_position; 
 
@@ -25,19 +28,18 @@ void main()
 	vec3 normal_wc	 = normalize(u_normal_matrix * v_normal);
 	
 	// set ambient
-	float ambientStrength = 0.2;
-	vec3 ambient = ambientStrength * u_light_ambient;
+	vec3 ambient = u_obj_ambient * u_light_ambient;
 
 	// set diffuse
 	vec3 light_dir = normalize(u_light_position - position_wc);
 	float diff = max(dot(normal_wc, light_dir), 0.0);
-	vec3 diffuse = diff * u_light_diffuse;
+	vec3 diffuse = diff * u_light_diffuse * u_obj_diffuse;
 
 	// set specular
 	vec3 reflect_dir = reflect(-light_dir, normal_wc);
 	vec3 view_dir = normalize(u_camera_position - position_wc);
 	float rdotv = pow(max(dot(view_dir, reflect_dir), 0.0), u_obj_shininess);
-	vec3 specular = rdotv * u_light_specular;
+	vec3 specular = rdotv * u_light_specular * u_obj_specular;
 
 	vec3 color = (ambient + (1/pow(length(u_light_position - position_wc), 4)) * (diffuse + specular)) * texture2D(u_diffuse_texture, v_texcoord).xyz;
 

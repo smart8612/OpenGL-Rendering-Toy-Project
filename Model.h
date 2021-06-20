@@ -21,7 +21,7 @@ public:
     Model() {};
     
     bool load_model(const std::string& filename) ;
-    void draw(int loc_a_position, int loc_u_diffuse_texture, int loc_a_texcoord, int loc_a_normal);
+    void draw(int loc_a_position, int loc_u_diffuse_texture, int loc_a_texcoord, int loc_a_normal, int loc_u_ambient, int loc_u_diffuse, int loc_u_specular, int loc_u_shininess);
     bool init_texture_object(std::string filepath);
 
     void      set_translate(glm::vec3 vec)  { vec_translate = vec; }
